@@ -1,0 +1,826 @@
+(() => {
+  "use strict";
+
+  const BUILD = "v3.4-clean-core";
+
+  const CONFIG = {
+    dashCost: 8,
+    worldWidth: 1800,
+    gateX: 1690,
+    groundY: 430,
+    gravity: 1500,
+    walkSpeed: 220,
+    levelWalkSpeed: 230,
+    dashSpeed: 360,
+    jumpVelocity: -620,
+    levelAttackReach: 52,
+    bossAttackReach: 58,
+  };
+
+  const dom = {};
+  const state = {
+    activeScreen: "menu",
+    levelRunning: false,
+    bossRunning: false,
+    levelLastTime: 0,
+    bossLastTime: 0,
+    cameraX: 0,
+    levelPlayer: null,
+    levelEnemies: [],
+    levelPickups: [],
+    bossPlayer: null,
+    boss: null,
+    levelInput: { left: false, right: false },
+    bossInput: { left: false, right: false },
+    levelAttackLocked: false,
+    bossAttackLocked: false,
+  };
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  function init() {
+    cacheDom();
+    setBuildTags();
+    wireNavigation();
+    wireControls();
+    restartLevel();
+    showScreen("menu");
+    preventBrowserGestures();
+  }
+
+  function cacheDom() {
+    [
+      "safeHub",
+      "menu",
+      "hub",
+      "customize",
+      "gallery",
+      "game",
+      "boss",
+      "result",
+      "hubText",
+      "resultText",
+      "resultStats",
+      "levelCanvas",
+      "bossCanvas",
+      "armorDots",
+      "levelHealth",
+      "levelHealthFill",
+      "levelEnergy",
+      "levelMessage",
+      "levelLeft",
+      "levelRight",
+      "levelJump",
+      "levelAttack",
+      "levelDash",
+      "levelRestart",
+      "bossArmorDots",
+      "bossPlayerHealth",
+      "bossPlayerHealthFill",
+      "bossEnergy",
+      "bossHitsLeft",
+      "bossHealthFill",
+      "bossMessage",
+      "bossLeft",
+      "bossRight",
+      "bossJump",
+      "bossAttack",
+      "bossDash",
+      "bossRestart",
+    ].forEach((id) => {
+      dom[id] = document.getElementById(id);
+    });
+
+    dom.levelCtx = dom.levelCanvas.getContext("2d");
+    dom.bossCtx = dom.bossCanvas.getContext("2d");
+  }
+
+  function setBuildTags() {
+    document.querySelectorAll("[data-build-tag]").forEach((tag) => {
+      tag.textContent = BUILD;
+    });
+  }
+
+  function wireNavigation() {
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      const destination = target && target.dataset ? target.dataset.go : null;
+      if (destination) showScreen(destination);
+    });
+
+    dom.safeHub.addEventListener("click", () => showScreen("hub"));
+    dom.levelRestart.addEventListener("click", restartLevel);
+    dom.bossRestart.addEventListener("click", startBoss);
+  }
+
+  function wireControls() {
+    bindHold(dom.levelLeft, () => (state.levelInput.left = true), () => (state.levelInput.left = false));
+    bindHold(dom.levelRight, () => (state.levelInput.right = true), () => (state.levelInput.right = false));
+    bindPress(dom.levelJump, () => jump(state.levelPlayer));
+    bindPress(dom.levelAttack, levelAttack);
+    bindPress(dom.levelDash, () => dash(state.levelPlayer, setLevelMessage, updateLevelHud));
+
+    bindHold(dom.bossLeft, () => (state.bossInput.left = true), () => (state.bossInput.left = false));
+    bindHold(dom.bossRight, () => (state.bossInput.right = true), () => (state.bossInput.right = false));
+    bindPress(dom.bossJump, () => jump(state.bossPlayer));
+    bindPress(dom.bossAttack, bossAttack);
+    bindPress(dom.bossDash, () => dash(state.bossPlayer, setBossMessage, updateBossHud));
+  }
+
+  function preventBrowserGestures() {
+    document.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
+    window.addEventListener("contextmenu", (event) => event.preventDefault());
+    document.addEventListener("selectstart", (event) => event.preventDefault());
+    document.addEventListener("dragstart", (event) => event.preventDefault());
+    document.addEventListener("gesturestart", (event) => event.preventDefault());
+  }
+
+  function bindPress(button, callback) {
+    let active = false;
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      if (active) return;
+      active = true;
+      callback();
+      button.blur();
+    });
+    const release = (event) => {
+      event.preventDefault();
+      active = false;
+      button.blur();
+    };
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("pointerleave", release);
+  }
+
+  function bindHold(button, onDown, onUp) {
+    let active = false;
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      if (active) return;
+      active = true;
+      onDown();
+      button.blur();
+    });
+    const release = (event) => {
+      event.preventDefault();
+      if (!active) return;
+      active = false;
+      onUp();
+      button.blur();
+    };
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("pointerleave", release);
+  }
+
+  function showScreen(screenId) {
+    document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("is-active"));
+
+    const screen = dom[screenId] || dom.hub;
+    screen.classList.add("is-active");
+    state.activeScreen = screenId;
+
+    state.levelRunning = false;
+    state.bossRunning = false;
+    state.levelInput.left = false;
+    state.levelInput.right = false;
+    state.bossInput.left = false;
+    state.bossInput.right = false;
+
+    if (screenId === "game") startLevel();
+    if (screenId === "boss") startBoss();
+
+    window.scrollTo(0, 0);
+  }
+
+  function makePlayer(overrides = {}) {
+    return {
+      x: 70,
+      y: 360,
+      w: 34,
+      h: 66,
+      vx: 0,
+      vy: 0,
+      face: 1,
+      onGround: false,
+      armor: 3,
+      health: 100,
+      energy: 0,
+      attackFlash: 0,
+      invulnerable: 0,
+      dashing: 0,
+      intangible: 0,
+      gateReached: false,
+      ...overrides,
+    };
+  }
+
+  function restartLevel() {
+    state.levelAttackLocked = false;
+    state.cameraX = 0;
+    state.levelPlayer = makePlayer();
+    state.levelEnemies = [
+      makeEnemy("small", 500, 396, 34, 34, 1),
+      makeEnemy("guard", 930, 388, 50, 42, 2),
+      makeEnemy("flyer", 1240, 250, 46, 34, 2, { flying: true }),
+    ];
+    state.levelPickups = [
+      { x: 720, y: 330, collected: false },
+      { x: 1420, y: 320, collected: false },
+    ];
+
+    setLevelMessage("Reach gate");
+    updateLevelHud();
+    drawLevel(0);
+  }
+
+  function startLevel() {
+    restartLevel();
+    state.levelRunning = true;
+    state.levelLastTime = performance.now();
+    requestAnimationFrame(levelLoop);
+  }
+
+  function makeEnemy(kind, x, y, w, h, hp, options = {}) {
+    return {
+      kind,
+      x,
+      y,
+      w,
+      h,
+      hp,
+      maxHp: hp,
+      dir: options.dir || -1,
+      flying: !!options.flying,
+      t: 0,
+    };
+  }
+
+  function startBoss() {
+    state.bossAttackLocked = false;
+    const source = state.levelPlayer || makePlayer({ energy: 20 });
+
+    state.bossPlayer = makePlayer({
+      x: 110,
+      armor: source.armor,
+      health: source.health,
+      energy: Math.max(20, source.energy),
+    });
+
+    state.boss = {
+      x: 690,
+      y: 330,
+      w: 92,
+      h: 100,
+      hp: 100,
+      maxHp: 100,
+      hitFlash: 0,
+      cooldown: 0.65,
+      windup: 0,
+      telegraph: 0,
+      telegraphType: "",
+      lastAttackType: "orb",
+      projectiles: [],
+    };
+
+    setBossMessage(`Build ${BUILD}`);
+    updateBossHud();
+    drawBoss(0);
+
+    state.bossRunning = true;
+    state.bossLastTime = performance.now();
+    requestAnimationFrame(bossLoop);
+  }
+
+  function setLevelMessage(message) {
+    dom.levelMessage.textContent = message;
+  }
+
+  function setBossMessage(message) {
+    dom.bossMessage.textContent = message;
+  }
+
+  function armorDots(count) {
+    return [1, 2, 3]
+      .map((index) => `<i class="dot ${index <= count ? "" : "is-empty"}"></i>`)
+      .join("");
+  }
+
+  function updateLevelHud() {
+    const player = state.levelPlayer;
+    dom.armorDots.innerHTML = armorDots(player.armor);
+    dom.levelHealth.textContent = Math.max(0, Math.ceil(player.health));
+    dom.levelHealthFill.style.width = `${clamp(player.health, 0, 100)}%`;
+    dom.levelEnergy.textContent = Math.floor(player.energy);
+    updateDashButton(dom.levelDash, player.energy);
+  }
+
+  function updateBossHud() {
+    const player = state.bossPlayer;
+    const boss = state.boss;
+    dom.bossArmorDots.innerHTML = armorDots(player.armor);
+    dom.bossPlayerHealth.textContent = Math.max(0, Math.ceil(player.health));
+    dom.bossPlayerHealthFill.style.width = `${clamp(player.health, 0, 100)}%`;
+    dom.bossEnergy.textContent = Math.floor(player.energy);
+    dom.bossHitsLeft.textContent = Math.max(0, Math.ceil(boss.hp / 10));
+    dom.bossHealthFill.style.width = `${clamp(boss.hp, 0, 100)}%`;
+    updateDashButton(dom.bossDash, player.energy);
+  }
+
+  function updateDashButton(button, energy) {
+    button.classList.toggle("is-locked", energy < CONFIG.dashCost);
+    button.disabled = false;
+  }
+
+  function jump(player) {
+    if (!player || !player.onGround) return;
+    player.vy = CONFIG.jumpVelocity;
+    player.onGround = false;
+  }
+
+  function dash(player, messageFn, hudFn) {
+    if (!player || player.energy < CONFIG.dashCost) return;
+
+    player.energy -= CONFIG.dashCost;
+    player.dashing = 0.42;
+    player.invulnerable = 0.8;
+    player.intangible = 0.95;
+    player.vx = CONFIG.dashSpeed * player.face;
+
+    messageFn("Intangible");
+    hudFn();
+  }
+
+  function levelAttack() {
+    const player = state.levelPlayer;
+    if (!player || state.levelAttackLocked) return;
+
+    state.levelAttackLocked = true;
+    setTimeout(() => (state.levelAttackLocked = false), 120);
+
+    player.attackFlash = 0.14;
+    player.energy = Math.min(100, player.energy + 4);
+
+    const hitbox = attackBox(player, CONFIG.levelAttackReach);
+    const enemy = nearestOverlappingEnemy(hitbox, state.levelEnemies, player);
+
+    if (enemy) {
+      enemy.hp -= 1;
+      player.energy = Math.min(100, player.energy + 16);
+      setLevelMessage(enemy.hp <= 0 ? "Enemy down" : `${enemy.kind} HP ${enemy.hp}/${enemy.maxHp}`);
+    } else {
+      setLevelMessage("Miss");
+    }
+
+    updateLevelHud();
+  }
+
+  function bossAttack() {
+    const player = state.bossPlayer;
+    const boss = state.boss;
+    if (!player || !boss || state.bossAttackLocked || boss.hp <= 0) return;
+
+    state.bossAttackLocked = true;
+    setTimeout(() => (state.bossAttackLocked = false), 150);
+
+    player.attackFlash = 0.14;
+    player.energy = Math.min(100, player.energy + 4);
+
+    const hitbox = attackBox(player, CONFIG.bossAttackReach);
+    if (rectsOverlap(hitbox, boss)) {
+      boss.hp -= 10;
+      boss.hitFlash = 0.18;
+      player.energy = Math.min(100, player.energy + 14);
+      setBossMessage(boss.hp > 0 ? `Boss hit: ${Math.ceil(boss.hp / 10)} hits left` : "Boss defeated");
+      updateBossHud();
+
+      if (boss.hp <= 0) finishBoss();
+    } else {
+      setBossMessage("Miss");
+      updateBossHud();
+    }
+  }
+
+  function finishBoss() {
+    const player = state.bossPlayer;
+    const boss = state.boss;
+
+    boss.hp = 0;
+    state.bossRunning = false;
+    updateBossHud();
+
+    setBossMessage("Boss defeated");
+    dom.hubText.textContent = "Level 1 clear: boss defeated.";
+    dom.resultText.textContent = "Boss defeated. Level 1 route cleared.";
+    dom.resultStats.textContent = `Remaining health: ${Math.max(0, Math.ceil(player.health))} | Armor layers: ${player.armor} | Energy: ${Math.floor(player.energy)}`;
+
+    setTimeout(() => showScreen("result"), 800);
+  }
+
+  function nearestOverlappingEnemy(hitbox, enemies, player) {
+    let nearest = null;
+    let nearestDistance = Infinity;
+
+    enemies.forEach((enemy) => {
+      if (enemy.hp <= 0 || !rectsOverlap(hitbox, enemy)) return;
+      const distance = Math.abs(centerX(player) - centerX(enemy));
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearest = enemy;
+      }
+    });
+
+    return nearest;
+  }
+
+  function attackBox(actor, reach) {
+    return {
+      x: actor.face > 0 ? actor.x + actor.w : actor.x - reach,
+      y: actor.y + 10,
+      w: reach,
+      h: 38,
+    };
+  }
+
+  function hurtLevelPlayer(ignoreArmor) {
+    const player = state.levelPlayer;
+    if (!canHazardHit(player)) return;
+
+    player.invulnerable = 1;
+    player.energy = Math.min(100, player.energy + 12);
+
+    if (player.armor > 0 && !ignoreArmor) {
+      player.armor -= 1;
+      setLevelMessage("Armor layer hit");
+    } else {
+      player.health -= 25;
+      setLevelMessage("Health damage");
+    }
+
+    updateLevelHud();
+    if (player.health <= 0) setTimeout(restartLevel, 700);
+  }
+
+  function hurtBossPlayer(ignoreArmor) {
+    const player = state.bossPlayer;
+    if (!canHazardHit(player)) return;
+
+    player.invulnerable = 1;
+    player.energy = Math.min(100, player.energy + 12);
+
+    if (player.armor > 0 && !ignoreArmor) {
+      player.armor -= 1;
+      setBossMessage("Armor layer hit");
+    } else {
+      player.health -= 18;
+      setBossMessage("Health damage");
+    }
+
+    updateBossHud();
+    if (player.health <= 0) setTimeout(startBoss, 700);
+  }
+
+  function canHazardHit(actor) {
+    return actor && actor.invulnerable <= 0 && actor.dashing <= 0 && actor.intangible <= 0;
+  }
+
+  function updateActor(actor, input, dt, maxX, walkSpeed = CONFIG.walkSpeed) {
+    actor.attackFlash = Math.max(0, actor.attackFlash - dt);
+    actor.invulnerable = Math.max(0, actor.invulnerable - dt);
+    actor.dashing = Math.max(0, actor.dashing - dt);
+    actor.intangible = Math.max(0, actor.intangible - dt);
+
+    const axis = Number(input.right) - Number(input.left);
+    if (axis !== 0) {
+      actor.face = axis;
+      actor.vx = axis * (actor.dashing > 0 ? CONFIG.dashSpeed : walkSpeed);
+    } else if (actor.dashing <= 0) {
+      actor.vx *= 0.82;
+    }
+
+    actor.vy += CONFIG.gravity * dt;
+    actor.x += actor.vx * dt;
+    actor.y += actor.vy * dt;
+
+    if (actor.y + actor.h >= CONFIG.groundY) {
+      actor.y = CONFIG.groundY - actor.h;
+      actor.vy = 0;
+      actor.onGround = true;
+    } else {
+      actor.onGround = false;
+    }
+
+    actor.x = clamp(actor.x, 20, maxX);
+  }
+
+  function updateLevel(dt) {
+    const player = state.levelPlayer;
+    updateActor(player, state.levelInput, dt, CONFIG.worldWidth - 80, CONFIG.levelWalkSpeed);
+
+    state.cameraX = clamp(player.x - 330, 0, CONFIG.worldWidth - 960);
+
+    state.levelEnemies.forEach((enemy) => {
+      if (enemy.hp <= 0) return;
+      updateEnemy(enemy, dt);
+      if (rectsOverlap(player, enemy)) hurtLevelPlayer(enemy.flying);
+    });
+
+    state.levelPickups.forEach((pickup) => {
+      if (pickup.collected) return;
+      if (distance(player.x + 17, player.y + 33, pickup.x, pickup.y) < 42) {
+        pickup.collected = true;
+        player.energy = Math.min(100, player.energy + 25);
+        setLevelMessage("Pickup");
+        updateLevelHud();
+      }
+    });
+
+    if (player.x > CONFIG.gateX && !player.gateReached) {
+      player.gateReached = true;
+      setLevelMessage("Boss gate reached");
+      setTimeout(() => showScreen("boss"), 450);
+    }
+  }
+
+  function updateEnemy(enemy, dt) {
+    if (enemy.flying) {
+      enemy.t += dt;
+      enemy.x += enemy.dir * 80 * dt;
+      enemy.y = 245 + Math.sin(enemy.t * 3) * 38;
+      if (enemy.x < 1150 || enemy.x > 1440) enemy.dir *= -1;
+      return;
+    }
+
+    enemy.x += enemy.dir * 65 * dt;
+    if (enemy.x < 390 || enemy.x > 1040) enemy.dir *= -1;
+    enemy.y = CONFIG.groundY - enemy.h;
+  }
+
+  function updateBoss(dt) {
+    const player = state.bossPlayer;
+    const boss = state.boss;
+
+    updateActor(player, state.bossInput, dt, 820);
+
+    boss.hitFlash = Math.max(0, boss.hitFlash - dt);
+    boss.cooldown -= dt;
+    boss.windup = Math.max(0, boss.windup - dt);
+
+    if (boss.telegraph > 0) {
+      boss.telegraph -= dt;
+      if (boss.telegraph <= 0) releaseBossAttack();
+    }
+
+    boss.x += Math.sign(centerX(player) - centerX(boss)) * 48 * dt;
+    boss.x = clamp(boss.x, 540, 840);
+
+    if (boss.cooldown <= 0 && boss.telegraph <= 0 && boss.windup <= 0) {
+      boss.cooldown = 1.05;
+      beginBossAttack();
+    }
+
+    if (boss.windup > 0 && canHazardHit(player) && rectsOverlap(player, slashZone())) {
+      hurtBossPlayer(false);
+    }
+
+    boss.projectiles.forEach((projectile) => updateProjectile(projectile, player, dt));
+    boss.projectiles = boss.projectiles.filter((projectile) => projectile.life > 0 && projectile.x > -80 && projectile.x < 1040);
+
+    if (canHazardHit(player) && rectsOverlap(player, boss)) {
+      hurtBossPlayer(false);
+    }
+  }
+
+  function beginBossAttack() {
+    const player = state.bossPlayer;
+    const boss = state.boss;
+    const dist = Math.abs(centerX(player) - centerX(boss));
+    const useOrb = dist > 215 || boss.lastAttackType === "slash";
+
+    boss.telegraph = useOrb ? 0.38 : 0.3;
+    boss.telegraphType = useOrb ? "orb" : "slash";
+    boss.lastAttackType = boss.telegraphType;
+
+    setBossMessage(useOrb ? "Boss charges orb" : "Boss winds up slash");
+  }
+
+  function releaseBossAttack() {
+    const player = state.bossPlayer;
+    const boss = state.boss;
+
+    if (boss.telegraphType === "slash") {
+      boss.windup = 0.22;
+    }
+
+    if (boss.telegraphType === "orb") {
+      const direction = centerX(player) < centerX(boss) ? -1 : 1;
+      boss.projectiles.push({
+        x: boss.x + boss.w / 2,
+        y: boss.y + 46,
+        w: 28,
+        h: 28,
+        vx: direction * 290,
+        life: 2.8,
+        ignorePlayerUntilClear: false,
+      });
+    }
+
+    boss.telegraphType = "";
+  }
+
+  function updateProjectile(projectile, player, dt) {
+    projectile.x += projectile.vx * dt;
+    projectile.life -= dt;
+
+    const touching = rectsOverlap(player, projectile);
+
+    if (!touching) {
+      projectile.ignorePlayerUntilClear = false;
+      return;
+    }
+
+    if (!canHazardHit(player)) {
+      projectile.ignorePlayerUntilClear = true;
+      return;
+    }
+
+    if (projectile.ignorePlayerUntilClear) return;
+
+    projectile.life = 0;
+    hurtBossPlayer(false);
+  }
+
+  function slashZone() {
+    const boss = state.boss;
+    return { x: boss.x - 96, y: boss.y + 8, w: boss.w + 192, h: 72 };
+  }
+
+  function levelLoop(now) {
+    if (!state.levelRunning) return;
+
+    const dt = Math.min(0.033, (now - state.levelLastTime) / 1000);
+    state.levelLastTime = now;
+
+    updateLevel(dt);
+    drawLevel(now / 1000);
+
+    requestAnimationFrame(levelLoop);
+  }
+
+  function bossLoop(now) {
+    if (!state.bossRunning) return;
+
+    const dt = Math.min(0.033, (now - state.bossLastTime) / 1000);
+    state.bossLastTime = now;
+
+    updateBoss(dt);
+    drawBoss(now / 1000);
+
+    requestAnimationFrame(bossLoop);
+  }
+
+  function drawLevel(time) {
+    const ctx = dom.levelCtx;
+    const cameraX = state.cameraX;
+
+    clearArena(ctx);
+    drawGround(ctx, -cameraX, CONFIG.worldWidth);
+    drawGate(ctx, cameraX);
+    drawPickups(ctx, cameraX, time);
+    drawEnemies(ctx, cameraX);
+    drawAttackFlash(ctx, state.levelPlayer, CONFIG.levelAttackReach, cameraX);
+    drawPlayer(ctx, state.levelPlayer, cameraX);
+  }
+
+  function drawBoss(time) {
+    const ctx = dom.bossCtx;
+    const boss = state.boss;
+
+    clearArena(ctx);
+    drawGround(ctx, 0, 960);
+
+    if (boss.telegraph > 0 && boss.telegraphType === "slash") {
+      drawRect(ctx, slashZone(), "rgba(251,113,133,.25)");
+    }
+
+    if (boss.windup > 0) {
+      drawRect(ctx, slashZone(), "rgba(251,113,133,.45)");
+    }
+
+    if (boss.telegraph > 0 && boss.telegraphType === "orb") {
+      ctx.fillStyle = "rgba(167,139,250,.55)";
+      ctx.beginPath();
+      ctx.arc(boss.x + boss.w / 2, boss.y + 46, 18 + Math.sin(time * 18) * 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    boss.projectiles.forEach((projectile) => {
+      ctx.fillStyle = "#a78bfa";
+      ctx.beginPath();
+      ctx.arc(projectile.x, projectile.y, 14, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.fillStyle = boss.hitFlash > 0 ? "#fbbf24" : "#be123c";
+    ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(boss.x + 18, boss.y + 24, 10, 10);
+    ctx.fillRect(boss.x + boss.w - 28, boss.y + 24, 10, 10);
+
+    drawAttackFlash(ctx, state.bossPlayer, CONFIG.bossAttackReach, 0);
+    drawPlayer(ctx, state.bossPlayer, 0);
+
+    ctx.fillStyle = "#e5e7eb";
+    ctx.font = "16px system-ui";
+    ctx.fillText(`Boss hits left: ${Math.max(0, Math.ceil(boss.hp / 10))}`, 20, 34);
+  }
+
+  function clearArena(ctx) {
+    ctx.clearRect(0, 0, 960, 540);
+    ctx.fillStyle = "#111827";
+    ctx.fillRect(0, 0, 960, 540);
+  }
+
+  function drawGround(ctx, offsetX, width) {
+    ctx.fillStyle = "#1e1b4b";
+    ctx.fillRect(offsetX, CONFIG.groundY, width, 110);
+    ctx.fillStyle = "#475569";
+    for (let x = 0; x < width; x += 90) {
+      ctx.fillRect(offsetX + x, CONFIG.groundY, 55, 8);
+    }
+  }
+
+  function drawGate(ctx, cameraX) {
+    ctx.fillStyle = "#f59e0b";
+    ctx.fillRect(CONFIG.gateX - cameraX, 330, 48, 100);
+  }
+
+  function drawPickups(ctx, cameraX, time) {
+    state.levelPickups.forEach((pickup) => {
+      if (pickup.collected) return;
+      ctx.fillStyle = "#a78bfa";
+      ctx.beginPath();
+      ctx.arc(pickup.x - cameraX, pickup.y, 12 + Math.sin(time * 7) * 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function drawEnemies(ctx, cameraX) {
+    state.levelEnemies.forEach((enemy) => {
+      if (enemy.hp <= 0) return;
+
+      ctx.fillStyle = enemy.flying ? "#f472b6" : enemy.kind === "small" ? "#f97316" : "#ef4444";
+
+      if (enemy.flying) {
+        ctx.beginPath();
+        ctx.ellipse(enemy.x - cameraX + 23, enemy.y + 17, 23, 17, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
+      }
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "12px system-ui";
+      ctx.fillText(String(enemy.hp), enemy.x - cameraX + enemy.w / 2 - 3, enemy.y - 5);
+    });
+  }
+
+  function drawAttackFlash(ctx, actor, reach, cameraX) {
+    if (!actor || actor.attackFlash <= 0) return;
+
+    const hitbox = attackBox(actor, reach);
+    ctx.fillStyle = "#fbbf2488";
+    ctx.fillRect(hitbox.x - cameraX, hitbox.y, hitbox.w, hitbox.h);
+  }
+
+  function drawPlayer(ctx, player, cameraX) {
+    if (!player) return;
+
+    const flicker = !canHazardHit(player) && Math.floor(Date.now() / 70) % 2;
+    ctx.fillStyle = flicker ? "#38bdf888" : "#38bdf8";
+    ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
+  }
+
+  function drawRect(ctx, rect, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+  }
+
+  function rectsOverlap(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  function centerX(rect) {
+    return rect.x + rect.w / 2;
+  }
+
+  function distance(x1, y1, x2, y2) {
+    return Math.hypot(x1 - x2, y1 - y2);
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+})();
