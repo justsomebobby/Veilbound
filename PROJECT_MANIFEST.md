@@ -1,7 +1,8 @@
 # Veilbound Project Manifest
 
-Current documented phase: Phase 3.5 planning
-Current stable playable build: `v3.4-clean-core`
+Current documented phase: Phase 3.5 visual prototype
+Current stable playable build before visual prototype: `v3.4-clean-core`
+Current visual prototype build: `v3.5-visual-proto`
 
 This document exists so the project can continue cleanly across future conversations without relying only on chat history.
 
@@ -104,13 +105,13 @@ Important cleanup goals:
 - Keep visual drawing separate from hitboxes.
 - Keep HUD layout fixed so gameplay text cannot move controls.
 
-The current clean-core gameplay has been user-tested and confirmed working.
+The clean-core gameplay was user-tested and confirmed working.
 
 ## Current phase
 
 ### Phase 3.5 — Visual direction prototype
 
-Phase 3.5 is next.
+Phase 3.5 is now being implemented.
 
 Purpose:
 
@@ -120,7 +121,7 @@ Make the current playable build visually point toward the intended final art sty
 
 Phase 3.5 should not become Phase 4.
 
-Phase 3.5 should focus on:
+Phase 3.5 focuses on:
 
 - pink-haired witch player visual direction
 - Level 1 forest visual direction
@@ -136,6 +137,24 @@ Phase 3.5 should not add:
 - full gallery/cutscene systems
 - cave/hell full production assets
 - new major gameplay mechanics
+
+## Phase 3.5 implementation notes
+
+Current visual prototype build: `v3.5-visual-proto`
+
+Implemented in the prototype:
+
+- dark forest backdrop and forest ground treatment
+- pink-haired witch canvas-drawn player silhouette
+- hat, cape, pink outfit, boots, and hair visual cues
+- slime, goblin, and bat-style enemy silhouettes for Level 1 direction
+- King Slime boss visual direction
+- boss projectile reinterpreted as slime glob
+- boss close attack reinterpreted as body slam / splash zone
+- pink/purple dash and magic-style visual effects
+- faint debug hitbox hint to show visuals remain separate from collision
+
+This remains a prototype visual pass, not final art.
 
 ## Future phases
 
