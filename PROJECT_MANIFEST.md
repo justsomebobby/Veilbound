@@ -1,9 +1,9 @@
 # Veilbound Project Manifest
 
-Current documented phase: Phase 4A/4B encounter framework prototype
+Current documented phase: Phase 4A encounter framework repair
 Current stable playable build before visual prototype: `v3.4-clean-core`
 Current visual prototype build: `v3.5-visual-proto`
-Current active build: `v4.0-encounter-proto`
+Current active build: `v4.0.1-root-fix`
 
 This document exists so the project can continue cleanly across future conversations without relying only on chat history.
 
@@ -26,16 +26,17 @@ The project is being built to run through GitHub Pages.
 ## Current repository structure
 
 ```text
-index.html        Static app shell and screen markup. Currently loads game-core.js.
+index.html        Static app shell and screen markup. Currently loads game-fix.js.
 styles.css        Layout, mobile controls, HUD, and visual styling
-game-core.js      Current active Phase 4 encounter prototype script
+game-fix.js       Current active Phase 4A root-hold repair script
+game-core.js      Previous Phase 4A encounter prototype script kept temporarily for rollback/reference
 game.js           Previous Phase 3.5 visual prototype script kept temporarily for rollback/reference
 ARCHITECTURE.md   Clean-code rules and technical structure notes
 PROJECT_MANIFEST.md  Project status, goals, and continuation notes
 VISUAL_BRIEF.md      Art direction and Phase 3.5 visual target
 ```
 
-Cleanup note: `game-core.js` is now the active script. The older `game.js` should be removed or archived after Phase 4A is confirmed stable, so the repo does not keep unnecessary legacy code.
+Cleanup note: after Phase 4A is confirmed stable, the active script should be consolidated back into a single main game script and old prototype files should be removed or archived so the repo does not accumulate dead paths.
 
 ## Completed phases
 
@@ -47,7 +48,7 @@ Established the intended game flow:
 Menu -> customization -> side-scroller gameplay -> boss fight -> result/menu return
 ```
 
-The long-term game includes replayable routes, unlocks, customization, cutscene/gallery areas, and progression systems.
+The long-term game includes replayable routes, unlocks, customization, scene/gallery areas, and progression systems.
 
 ### Phase 1 — GitHub Pages deployment
 
@@ -89,7 +90,7 @@ Working systems:
 - health after armor loss
 - normal enemy HP differences
 - boss HP around 10 hits
-- boss slash-style close attack
+- boss close attack
 - boss ranged projectile attack
 - boss result screen after victory
 - replay buttons
@@ -138,41 +139,42 @@ Important user feedback from Phase 3.5:
 
 ## Current phase
 
-### Phase 4A/4B — Encounter framework and first trap prototype
+### Phase 4A — Encounter framework and first root-hold repair
 
-Current active build: `v4.0-encounter-proto`
+Current active build: `v4.0.1-root-fix`
 
 Purpose:
 
 ```text
-Create the reusable encounter foundation for traps/grabs/escape loops before adding elites, spawn waves, or final animations.
+Create and tune the reusable encounter foundation for traps/grabs/escape loops before adding enemy finishers, spawn waves, or final animations.
 ```
 
-Implemented in the first Phase 4 build:
+The first Phase 4A attempt proved the framework but failed user testing because the trap behaved too much like guaranteed death. The repair build directly addresses that issue.
 
-- active script moved to `game-core.js`
-- build marker updated to `v4.0-encounter-proto`
-- Level 1 now has two root/snare trap prototypes
-- trap contact locks the player in place
-- player taps Jump / Atk / Dash to build escape progress
-- trap removes clothing/armor layers on a timer while trapped
-- if layers run out, a placeholder capture loop begins
-- capture loop drains health over time
-- Restart and Hub are the current exits from failed/capture loop states
-- trap visuals wrap around the player as placeholder feedback
-- HUD remains stable during encounter state
+Implemented in the active repair build:
 
-This is still placeholder-safe and not final adult animation content. The goal is system behavior.
+- active script changed to `game-fix.js`
+- build marker updated to `v4.0.1-root-fix`
+- root holds now release the player when the escape meter completes
+- first escape window is more forgiving
+- completing escape moves the player out of the root hold
+- completed root hold becomes disabled instead of instantly re-grabbing
+- post-release grace period prevents immediate re-capture/damage
+- late hold state can still be broken out of by tapping
+- health drain is slower in the late hold state
+- Restart and Hub remain the hard exits after full failure
 
-Testing focus for Phase 4A/4B:
+This remains placeholder-safe and not final animation content. The goal is system behavior.
 
-- Can the player trigger a trap reliably?
-- Does tapping escape feel responsive?
-- Does the layer timer remove layers at a readable pace?
-- Does the capture loop begin when armor reaches 0?
-- Does health drain during the capture loop?
-- Do Restart and Hub still work?
-- Does the normal level and boss flow still work after escaping traps?
+Testing focus for Phase 4A repair:
+
+- Does filling the escape meter always release the player?
+- Does the disabled root stay disabled after release?
+- Does post-release movement resume normally?
+- Is the first layer timer readable and fair?
+- Can the late hold state still be escaped before health reaches 0?
+- Does normal level flow to boss still work after escaping roots?
+- Does the boss still function after the repair script swap?
 
 ## Future phases
 
