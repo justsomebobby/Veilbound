@@ -54,3 +54,7 @@ https://justsomebobby.github.io/Veilbound/
 ## Current roadmap position
 
 Phase 1 is the menu/save/hub skeleton. Phase 2 will add the side-scroller gameplay core.
+
+## Deployment note
+
+This line was added to trigger the first GitHub Pages workflow run after repository setup.
