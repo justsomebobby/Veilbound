@@ -1,0 +1,6 @@
+Phase 4A repair target:
+- The snare must release the player when the progress meter completes.
+- The first timer should be more forgiving.
+- Completing the progress meter moves the player out of the snare and disables that snare.
+- Add a short grace period after release.
+- The loop state should not be the default outcome.
