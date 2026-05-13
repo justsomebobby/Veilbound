@@ -1,8 +1,9 @@
 # Veilbound Project Manifest
 
-Current documented phase: Phase 3.5 visual prototype
+Current documented phase: Phase 4A/4B encounter framework prototype
 Current stable playable build before visual prototype: `v3.4-clean-core`
 Current visual prototype build: `v3.5-visual-proto`
+Current active build: `v4.0-encounter-proto`
 
 This document exists so the project can continue cleanly across future conversations without relying only on chat history.
 
@@ -25,13 +26,16 @@ The project is being built to run through GitHub Pages.
 ## Current repository structure
 
 ```text
-index.html        Static app shell and screen markup
+index.html        Static app shell and screen markup. Currently loads game-core.js.
 styles.css        Layout, mobile controls, HUD, and visual styling
-game.js           Game state, input, movement, combat, boss logic, collision, and drawing
+game-core.js      Current active Phase 4 encounter prototype script
+game.js           Previous Phase 3.5 visual prototype script kept temporarily for rollback/reference
 ARCHITECTURE.md   Clean-code rules and technical structure notes
 PROJECT_MANIFEST.md  Project status, goals, and continuation notes
 VISUAL_BRIEF.md      Art direction and Phase 3.5 visual target
 ```
+
+Cleanup note: `game-core.js` is now the active script. The older `game.js` should be removed or archived after Phase 4A is confirmed stable, so the repo does not keep unnecessary legacy code.
 
 ## Completed phases
 
@@ -107,40 +111,9 @@ Important cleanup goals:
 
 The clean-core gameplay was user-tested and confirmed working.
 
-## Current phase
-
 ### Phase 3.5 — Visual direction prototype
 
-Phase 3.5 is now being implemented.
-
-Purpose:
-
-```text
-Make the current playable build visually point toward the intended final art style without adding Phase 4 gameplay systems yet.
-```
-
-Phase 3.5 should not become Phase 4.
-
-Phase 3.5 focuses on:
-
-- pink-haired witch player visual direction
-- Level 1 forest visual direction
-- forest enemy silhouettes / style targets
-- King Slime boss direction
-- basic VFX direction
-- maintaining hitbox/visual separation
-
-Phase 3.5 should not add:
-
-- elite encounter systems
-- trap systems
-- full gallery/cutscene systems
-- cave/hell full production assets
-- new major gameplay mechanics
-
-## Phase 3.5 implementation notes
-
-Current visual prototype build: `v3.5-visual-proto`
+Phase 3.5 implemented a temporary visual direction pass.
 
 Implemented in the prototype:
 
@@ -156,19 +129,83 @@ Implemented in the prototype:
 
 This remains a prototype visual pass, not final art.
 
+Important user feedback from Phase 3.5:
+
+- Temporary graphics are acceptable for now.
+- Final graphics must be much higher quality.
+- The player cannot remain tiny on iPhone in the final direction.
+- Future camera/sprite scale should support visible character presentation, outfit states, and scene readability.
+
+## Current phase
+
+### Phase 4A/4B — Encounter framework and first trap prototype
+
+Current active build: `v4.0-encounter-proto`
+
+Purpose:
+
+```text
+Create the reusable encounter foundation for traps/grabs/escape loops before adding elites, spawn waves, or final animations.
+```
+
+Implemented in the first Phase 4 build:
+
+- active script moved to `game-core.js`
+- build marker updated to `v4.0-encounter-proto`
+- Level 1 now has two root/snare trap prototypes
+- trap contact locks the player in place
+- player taps Jump / Atk / Dash to build escape progress
+- trap removes clothing/armor layers on a timer while trapped
+- if layers run out, a placeholder capture loop begins
+- capture loop drains health over time
+- Restart and Hub are the current exits from failed/capture loop states
+- trap visuals wrap around the player as placeholder feedback
+- HUD remains stable during encounter state
+
+This is still placeholder-safe and not final adult animation content. The goal is system behavior.
+
+Testing focus for Phase 4A/4B:
+
+- Can the player trigger a trap reliably?
+- Does tapping escape feel responsive?
+- Does the layer timer remove layers at a readable pace?
+- Does the capture loop begin when armor reaches 0?
+- Does health drain during the capture loop?
+- Do Restart and Hub still work?
+- Does the normal level and boss flow still work after escaping traps?
+
 ## Future phases
 
-### Phase 4 — Traps, elites, and special encounters
+### Phase 4C — Enemy vulnerability / finisher logic
 
-Expected Phase 4 scope:
+Expected scope:
 
-- traps along the path
-- elite encounters
-- special escape/tap mechanics
-- direct encounter state handling
-- better non-standard enemy behaviors
+- standard enemy contact removes layers first
+- vulnerable states allow enemy finisher/encounter behavior
+- knockdown or stun recovery prototype
+- enemy finisher hook that uses the same encounter framework
 
-Phase 4 should be built after the Phase 3.5 visual direction/pipeline is stable.
+### Phase 4D — Spawn director
+
+Expected scope:
+
+- enemies spawn from the right side
+- limited number of active enemies
+- spawn pressure discourages idle advancement
+- level remains objective-based rather than pure endless survival
+
+### Phase 4E — Longer Level 1 route / pacing
+
+Expected scope:
+
+- longer forest route
+- early enemy pressure
+- first trap tutorial
+- spawn-pressure stretch
+- stronger enemy/elite placeholder
+- second trap
+- gate
+- King Slime boss
 
 ## Current art direction summary
 
@@ -202,7 +239,7 @@ These are project standards:
 
 - Fix causes directly, not with layered patches.
 - Do not leave dead code paths just in case.
-- Keep gameplay state in `game.js`.
+- Keep gameplay state in the active game script.
 - Keep layout/styling in `styles.css`.
 - Keep `index.html` as a clean app shell.
 - Keep hitboxes separate from art.
@@ -210,6 +247,7 @@ These are project standards:
 - Hazards should use centralized collision rules.
 - HUD messages should never cause layout movement.
 - iPhone playability is a primary requirement.
+- Update this manifest whenever a phase or major system changes.
 
 ## Continuation prompt for future conversations
 
