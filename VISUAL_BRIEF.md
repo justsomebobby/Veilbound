@@ -87,6 +87,22 @@ Phase 3.5 player drawing can still be rough, but it should already suggest:
 - boots
 - cape/cloak
 
+## Player scale and camera requirement
+
+The player should not remain tiny on iPhone.
+
+The current Phase 3.5 temporary canvas art is acceptable as filler, but the final direction requires the heroine to be large enough to be visually enjoyable on a phone screen. A character smaller than a finger on the display is not an acceptable end-state for a game that depends on visible character presentation, outfit states, and mature/adult scene payoff.
+
+Future visual/camera work should plan for:
+
+- a larger player sprite on screen
+- clearer body, outfit, hat, cape, and hair readability
+- camera framing that supports character visibility, not just platforming distance
+- possible separation between exploration/combat scale and scene/gallery scale
+- hitboxes remaining fair even when sprites become larger than the collision body
+
+This scale concern is a core art-direction requirement, not just a polish note.
+
 ## Level progression visual path
 
 The intended world progression is:
