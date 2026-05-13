@@ -1,9 +1,9 @@
 {
-  "name": "veilbound-phase-1",
+  "name": "veilbound",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Mobile-first Phaser browser game scaffold for Veilbound. Phase 1 adds menu, save, hub, customization, options, gallery, and scene viewer skeletons using placeholder-safe assets only.",
+  "description": "Mobile-first Phaser browser game scaffold for Veilbound.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
