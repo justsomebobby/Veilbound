@@ -8,16 +8,16 @@
   <meta name="apple-mobile-web-app-title" content="Veilbound">
   <title>Veilbound</title>
   <link rel="stylesheet" href="./styles.css">
-  <script defer src="./game-fix.js?v=4.0.1-root-fix"></script>
+  <script defer src="./game-core-patch.js?v=4.0.2-trap-core-patch"></script>
 </head>
 <body>
   <button id="safeHub" type="button">Hub</button>
 
   <main id="app">
     <section id="menu" class="screen is-active">
-      <span class="buildTag" data-build-tag>v4.0.1-root-fix</span>
+      <span class="buildTag" data-build-tag>v4.0.2-trap-core-patch</span>
       <h1>Veilbound</h1>
-      <p>Phase 4A root hold repair build.</p>
+      <p>Phase 4A trap-core patch build.</p>
       <div class="grid">
         <button class="primary" type="button" data-go="hub">Continue</button>
         <button type="button" data-go="game">Play Level 1</button>
@@ -25,9 +25,9 @@
     </section>
 
     <section id="hub" class="screen">
-      <span class="buildTag" data-build-tag>v4.0.1-root-fix</span>
+      <span class="buildTag" data-build-tag>v4.0.2-trap-core-patch</span>
       <h2>Hub</h2>
-      <p id="hubText">Menu, level, boss, and root hold escape repair test.</p>
+      <p id="hubText">Menu, level, boss, and trap escape core test.</p>
       <div class="grid">
         <button class="primary" type="button" data-go="game">Play Level 1</button>
         <button class="danger" type="button" data-go="boss">Boss Test</button>
@@ -38,21 +38,21 @@
     </section>
 
     <section id="customize" class="screen">
-      <span class="buildTag" data-build-tag>v4.0.1-root-fix</span>
+      <span class="buildTag" data-build-tag>v4.0.2-trap-core-patch</span>
       <h2>Customize</h2>
       <p>Customization placeholder. Art layers come later.</p>
       <button type="button" data-go="hub">Back</button>
     </section>
 
     <section id="gallery" class="screen">
-      <span class="buildTag" data-build-tag>v4.0.1-root-fix</span>
+      <span class="buildTag" data-build-tag>v4.0.2-trap-core-patch</span>
       <h2>Gallery</h2>
       <p>Gallery placeholder. Scene controls come later.</p>
       <button type="button" data-go="hub">Back</button>
     </section>
 
     <section id="game" class="screen playScreen">
-      <span class="buildTag" data-build-tag>v4.0.1-root-fix</span>
+      <span class="buildTag" data-build-tag>v4.0.2-trap-core-patch</span>
 
       <div class="hud">
         <span class="chip">Armor <b id="armorDots"></b></span>
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <p class="hint">Root holds grab. Fill the meter to release; missed escapes can still be broken out of.</p>
+      <p class="hint">Traps grab. Fill the meter to release; late holds can still be broken out of.</p>
 
       <div class="row">
         <button id="levelRestart" class="small" type="button">Restart</button>
@@ -88,7 +88,7 @@
     </section>
 
     <section id="boss" class="screen playScreen">
-      <span class="buildTag" data-build-tag>v4.0.1-root-fix</span>
+      <span class="buildTag" data-build-tag>v4.0.2-trap-core-patch</span>
 
       <div class="hud">
         <span class="chip">Armor <b id="bossArmorDots"></b></span>
@@ -124,7 +124,7 @@
     </section>
 
     <section id="result" class="screen">
-      <span class="buildTag" data-build-tag>v4.0.1-root-fix</span>
+      <span class="buildTag" data-build-tag>v4.0.2-trap-core-patch</span>
       <h2>Level Clear</h2>
       <p id="resultText">Boss defeated.</p>
       <div class="card">
