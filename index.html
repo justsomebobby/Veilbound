@@ -1,372 +1,64 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#111827" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Veilbound" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Veilbound Phase 1</title>
-  <style>
-    :root {
-      --bg: #0b1020;
-      --panel: rgba(31, 41, 55, 0.92);
-      --panel2: rgba(55, 65, 81, 0.92);
-      --text: #f9fafb;
-      --muted: #cbd5e1;
-      --accent: #7c3aed;
-      --blue: #38bdf8;
-      --danger: #ef4444;
-      --warn: #f59e0b;
-    }
-
-    * { box-sizing: border-box; }
-
-    html,
-    body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow: hidden;
-      touch-action: none;
-      user-select: none;
-    }
-
-    body {
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
-
-    #app {
-      width: 100%;
-      min-height: 100dvh;
-      display: grid;
-      justify-items: center;
-      align-items: center;
-      padding: 18px;
-      overflow: hidden;
-      background: radial-gradient(circle at 50% 0%, #312e81 0%, #111827 42%, #050816 100%);
-    }
-
-    .screen {
-      width: min(920px, 100%);
-      max-height: calc(100dvh - 36px);
-      display: none;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 28px;
-      background: rgba(15,23,42,0.78);
-      box-shadow: 0 24px 80px rgba(0,0,0,0.45);
-      padding: clamp(18px, 3vw, 32px);
-      position: relative;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      margin: 0 auto;
-    }
-
-    .screen.active { display: block; }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: clamp(2rem, 7vw, 4rem);
-      letter-spacing: -0.04em;
-    }
-
-    h2 {
-      margin: 0 0 8px;
-      font-size: clamp(1.6rem, 5vw, 2.8rem);
-    }
-
-    p {
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: clamp(1rem, 3vw, 1.15rem);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 22px;
-    }
-
-    .stack {
-      display: grid;
-      gap: 14px;
-      margin-top: 22px;
-    }
-
-    button {
-      appearance: none;
-      border: 0;
-      border-radius: 18px;
-      min-height: 56px;
-      padding: 14px 18px;
-      background: var(--panel2);
-      color: white;
-      font: inherit;
-      font-weight: 800;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
-      touch-action: manipulation;
-    }
-
-    button.primary { background: var(--accent); }
-    button.danger { background: var(--danger); }
-    button.warn { background: var(--warn); color: #111827; }
-
-    .back {
-      margin-top: 20px;
-      min-height: 48px;
-      padding: 10px 16px;
-      border-radius: 999px;
-    }
-
-    .card {
-      background: var(--panel);
-      border-radius: 22px;
-      padding: 18px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
-    }
-
-    .pill {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 8px 12px;
-      background: rgba(124,58,237,0.22);
-      color: #ddd6fe;
-      font-weight: 800;
-      margin-right: 8px;
-      margin-bottom: 8px;
-    }
-
-    .touch-pad {
-      height: clamp(180px, 32dvh, 260px);
-      border-radius: 22px;
-      background: linear-gradient(#1f2937, #111827);
-      position: relative;
-      overflow: hidden;
-      margin-top: 18px;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    #avatar {
-      width: 52px;
-      height: 78px;
-      border-radius: 18px 18px 12px 12px;
-      background: var(--blue);
-      position: absolute;
-      left: calc(50% - 26px);
-      top: calc(50% - 39px);
-      box-shadow: 0 0 30px rgba(56,189,248,0.4);
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-      gap: 12px;
-      margin-top: 14px;
-      width: 100%;
-    }
-
-    .controls .left,
-    .controls .right {
-      display: grid;
-      gap: 12px;
-      min-width: 0;
-      width: 100%;
-    }
-
-    .controls .left { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .controls .right { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
-    .controls button {
-      min-width: 0;
-      width: 100%;
-      min-height: clamp(52px, 11vw, 64px);
-      padding: 10px 8px;
-      font-size: clamp(0.92rem, 3.1vw, 1.05rem);
-      border-radius: 16px;
-      white-space: nowrap;
-    }
-
-    .phase-controls {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    @media (max-width: 700px) {
-      #app {
-        padding-left: 12px;
-        padding-right: 12px;
-        padding-top: 12px;
-        padding-bottom: 12px;
-        align-items: start;
-      }
-
-      .screen {
-        width: 100%;
-        max-width: 420px;
-        max-height: calc(100dvh - 24px);
-        border-radius: 24px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .grid { grid-template-columns: 1fr; }
-      .controls { grid-template-columns: 1fr; }
-      .touch-pad { height: 31dvh; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#111827" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Veilbound" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Veilbound Phase 2</title>
+<style>
+:root{--bg:#0b1020;--panel:rgba(31,41,55,.92);--panel2:rgba(55,65,81,.92);--text:#f9fafb;--muted:#cbd5e1;--accent:#7c3aed;--blue:#38bdf8;--danger:#ef4444;--warn:#f59e0b;--good:#22c55e}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;touch-action:none;user-select:none}body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}#app{width:100%;min-height:100dvh;display:grid;justify-items:center;align-items:center;padding:18px;overflow:hidden;background:radial-gradient(circle at 50% 0%,#312e81 0%,#111827 42%,#050816 100%)}.screen{width:min(920px,100%);max-height:calc(100dvh - 36px);display:none;border:1px solid rgba(255,255,255,.12);border-radius:28px;background:rgba(15,23,42,.78);box-shadow:0 24px 80px rgba(0,0,0,.45);padding:clamp(18px,3vw,32px);position:relative;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;margin:0 auto}.screen.active{display:block}h1{margin:0 0 8px;font-size:clamp(2rem,7vw,4rem);letter-spacing:-.04em}h2{margin:0 0 8px;font-size:clamp(1.6rem,5vw,2.8rem)}p{color:var(--muted);line-height:1.45;font-size:clamp(1rem,3vw,1.15rem)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}.stack{display:grid;gap:14px;margin-top:22px}button{appearance:none;border:0;border-radius:18px;min-height:56px;padding:14px 18px;background:var(--panel2);color:white;font:inherit;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);touch-action:manipulation}button.primary{background:var(--accent)}button.danger{background:var(--danger)}button.warn{background:var(--warn);color:#111827}.back{margin-top:20px;min-height:48px;padding:10px 16px;border-radius:999px}.card{background:var(--panel);border-radius:22px;padding:18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}.pill{display:inline-block;border-radius:999px;padding:8px 12px;background:rgba(124,58,237,.22);color:#ddd6fe;font-weight:800;margin-right:8px;margin-bottom:8px}.touch-pad{height:clamp(180px,32dvh,260px);border-radius:22px;background:linear-gradient(#1f2937,#111827);position:relative;overflow:hidden;margin-top:18px;border:1px solid rgba(255,255,255,.1)}#avatar{width:52px;height:78px;border-radius:18px 18px 12px 12px;background:var(--blue);position:absolute;left:calc(50% - 26px);top:calc(50% - 39px);box-shadow:0 0 30px rgba(56,189,248,.4)}.controls{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:12px;margin-top:14px;width:100%}.controls .left,.controls .right{display:grid;gap:12px;min-width:0;width:100%}.controls .left{grid-template-columns:repeat(2,minmax(0,1fr))}.controls .right{grid-template-columns:repeat(3,minmax(0,1fr))}.controls button{min-width:0;width:100%;min-height:clamp(52px,11vw,64px);padding:10px 8px;font-size:clamp(.92rem,3.1vw,1.05rem);border-radius:16px;white-space:nowrap}.phase-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#gameScreen{padding:10px;max-width:980px}.game-wrap{position:relative;border-radius:22px;overflow:hidden;background:#020617;border:1px solid rgba(255,255,255,.14)}#gameCanvas{display:block;width:100%;aspect-ratio:16/9;background:#111827;touch-action:none}.hud{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;color:#e5e7eb;margin:0 0 8px}.hud span{background:rgba(15,23,42,.8);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:7px 10px}.mobile-game-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}.move-controls,.action-controls{display:grid;gap:10px}.move-controls{grid-template-columns:repeat(2,1fr)}.action-controls{grid-template-columns:repeat(3,1fr)}.game-btn{min-height:58px;padding:8px 6px;border-radius:18px}.game-note{font-size:13px;margin:8px 0 0;color:#9ca3af}.tiny-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.tiny-row button{min-height:44px;border-radius:999px;padding:8px 14px}.layer-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#22c55e;margin-left:4px}.layer-dot.off{background:#475569}.energy-bar{width:80px;height:10px;border:1px solid #64748b;border-radius:999px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px}.energy-fill{height:100%;background:#a78bfa;width:0%}
+@media(max-width:700px){#app{padding:12px;align-items:start}.screen{width:100%;max-width:420px;max-height:calc(100dvh - 24px);border-radius:24px;margin-left:auto;margin-right:auto}.grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.touch-pad{height:31dvh}#gameScreen{max-width:100%;padding:10px}.mobile-game-controls{grid-template-columns:1fr}.move-controls,.action-controls{grid-template-columns:repeat(3,1fr)}.move-controls button:first-child{grid-column:1/2}.move-controls button:last-child{grid-column:3/4}.hud{font-size:12px;flex-wrap:wrap}.game-btn{min-height:54px;font-size:15px}}
+</style>
 </head>
 <body>
-  <main id="app">
-    <section id="gate" class="screen active">
-      <h1>Veilbound</h1>
-      <p>Phase 1 placeholder-safe scaffold. This build contains no final adult art or explicit assets.</p>
-      <div class="card">
-        <h2>Content Gate Placeholder</h2>
-        <p>Future adult content is planned as opt-in, skippable, and controlled through settings and gallery playback. All characters will be 18+.</p>
-        <button class="primary" data-go="menu" data-accept>Continue</button>
-      </div>
-    </section>
-
-    <section id="menu" class="screen">
-      <h1>Veilbound</h1>
-      <p>Mobile-first browser game scaffold for iPhone and GitHub Pages.</p>
-      <div class="grid">
-        <button class="primary" data-go="hub">Continue</button>
-        <button data-go="touch">Touch Test</button>
-        <button data-go="options">Options</button>
-        <button data-go="gallery">Gallery</button>
-      </div>
-    </section>
-
-    <section id="hub" class="screen">
-      <h2>Hub</h2>
-      <p id="hubState">Current Level: 1 | Phase 1 menu/save skeleton.</p>
-      <div class="grid">
-        <button data-go="levels">Level Select</button>
-        <button data-go="customize">Customize</button>
-        <button data-go="skills">Skills</button>
-        <button data-go="gallery">Gallery</button>
-        <button class="primary" data-go="viewer">Scene Viewer</button>
-        <button data-go="options">Options</button>
-        <button data-go="touch">Touch Test</button>
-        <button data-go="menu">Main Menu</button>
-      </div>
-    </section>
-
-    <section id="customize" class="screen">
-      <h2>Customization</h2>
-      <p>Placeholder for layered art: base body, hair, face, outfit, damage layer, accessory.</p>
-      <div class="stack" id="customButtons"></div>
-      <button class="back" data-go="hub">Back</button>
-    </section>
-
-    <section id="options" class="screen">
-      <h2>Options</h2>
-      <p>Saved locally on this browser.</p>
-      <div class="stack" id="optionButtons"></div>
-      <button class="danger" id="resetSave">Reset Save</button>
-      <button class="back" data-go="hub">Back</button>
-    </section>
-
-    <section id="gallery" class="screen">
-      <h2>Gallery</h2>
-      <p>Unlocked placeholder scene records.</p>
-      <div class="card">
-        <span class="pill">Unlocked</span>
-        <strong>Phase 1 Placeholder Intro</strong>
-        <p>Proves gallery navigation before final art exists.</p>
-        <button class="primary" data-go="viewer">Open Scene Viewer</button>
-      </div>
-      <button class="back" data-go="hub">Back</button>
-    </section>
-
-    <section id="viewer" class="screen">
-      <h2>Scene Viewer</h2>
-      <p>Touch-friendly scene controls. Final animation phases will plug in later.</p>
-      <div class="card" style="text-align:center">
-        <h1 id="phaseLabel">Setup</h1>
-        <p id="loopLabel">Loop phase: ON</p>
-        <div class="phase-controls">
-          <button id="prevPhase">Prev</button>
-          <button class="warn" id="toggleLoop">Loop</button>
-          <button id="nextPhase">Next</button>
-        </div>
-      </div>
-      <button class="back" data-go="gallery">Back</button>
-    </section>
-
-    <section id="levels" class="screen">
-      <h2>Level Select</h2>
-      <p>Gameplay begins in Phase 2.</p>
-      <div class="card"><strong>Level 1: Shrine Ruins</strong><p>Planned: movement, jump, attack, dodge, enemies, clothing-health, and boss gate.</p></div>
-      <button class="back" data-go="hub">Back</button>
-    </section>
-
-    <section id="skills" class="screen">
-      <h2>Skills</h2>
-      <p>Placeholder for future progression.</p>
-      <div class="stack"><button>Quick Strike: planned</button><button>Dodge Counter: planned</button><button>Energy Break: planned</button><button>Repair: planned</button><button>Resist: planned</button></div>
-      <button class="back" data-go="hub">Back</button>
-    </section>
-
-    <section id="touch" class="screen">
-      <h2>Touch Test</h2>
-      <p>Hold left/right. Tap action buttons. This is the control layout test for iPhone.</p>
-      <div class="touch-pad"><div id="avatar"></div></div>
-      <div class="controls">
-        <div class="left"><button id="leftBtn">←</button><button id="rightBtn">→</button></div>
-        <div class="right"><button id="jumpBtn" class="primary">Jump</button><button id="atkBtn" class="primary">Atk</button><button id="dodgeBtn">Dodge</button></div>
-      </div>
-      <button class="back" data-go="hub">Back</button>
-    </section>
-  </main>
-
-  <script>
-    const SAVE_KEY = 'veilbound_phase1_save';
-    const defaults = { gateAccepted: false, player: { skinTone: 'default', hairColor: 'black', hairStyle: 'short', outfit: 'starter', passive: 'balanced' }, settings: { reducedExplicitness: true, encounterIntentPrompts: true, leftHandedMode: false, screenShake: false }, progress: { currentLevel: 1 } };
-    const phases = ['Setup', 'Main loop', 'Variant loop', 'Result'];
-    let phase = 0;
-    let looping = true;
-    let avatarX = 50;
-    let velocity = 0;
-
-    function loadSave() { try { return { ...defaults, ...(JSON.parse(localStorage.getItem(SAVE_KEY)) || {}) }; } catch { return { ...defaults }; } }
-    function saveGame(s) { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }
-    function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); render(); }
-    function render() {
-      const s = loadSave();
-      document.getElementById('hubState').textContent = `Current Level: ${s.progress?.currentLevel || 1} | Phase 1 menu/save skeleton.`;
-      renderCustomize(s); renderOptions(s); renderViewer();
-    }
-    function renderCustomize(s) {
-      const fields = [['Skin tone','skinTone',['default','warm','deep','pale']], ['Hair color','hairColor',['black','brown','blonde','silver']], ['Hair style','hairStyle',['short','long']], ['Outfit','outfit',['starter','training']], ['Passive','passive',['balanced','energy','escape']]];
-      document.getElementById('customButtons').innerHTML = fields.map(([label,key]) => `<button data-cycle="${key}">${label}: ${s.player[key]}</button>`).join('');
-      document.querySelectorAll('[data-cycle]').forEach(btn => btn.onclick = () => { const key = btn.dataset.cycle; const row = fields.find(f => f[1] === key); const next = loadSave(); const idx = row[2].indexOf(next.player[key]); next.player[key] = row[2][(idx + 1) % row[2].length]; saveGame(next); render(); });
-    }
-    function renderOptions(s) {
-      const opts = [['Reduced explicitness','reducedExplicitness'], ['Encounter prompts','encounterIntentPrompts'], ['Left-handed mode','leftHandedMode'], ['Screen shake','screenShake']];
-      document.getElementById('optionButtons').innerHTML = opts.map(([label,key]) => `<button data-toggle="${key}">${label}: ${s.settings[key] ? 'ON' : 'OFF'}</button>`).join('');
-      document.querySelectorAll('[data-toggle]').forEach(btn => btn.onclick = () => { const next = loadSave(); const key = btn.dataset.toggle; next.settings[key] = !next.settings[key]; saveGame(next); render(); });
-    }
-    function renderViewer() { document.getElementById('phaseLabel').textContent = phases[phase]; document.getElementById('loopLabel').textContent = `Loop phase: ${looping ? 'ON' : 'OFF'}`; }
-    document.addEventListener('click', e => { const go = e.target?.dataset?.go; if (go) show(go); if (e.target?.dataset?.accept !== undefined) { const s = loadSave(); s.gateAccepted = true; saveGame(s); } });
-    document.getElementById('resetSave').onclick = () => { localStorage.removeItem(SAVE_KEY); show('gate'); };
-    document.getElementById('prevPhase').onclick = () => { phase = Math.max(0, phase - 1); renderViewer(); };
-    document.getElementById('nextPhase').onclick = () => { phase = Math.min(phases.length - 1, phase + 1); renderViewer(); };
-    document.getElementById('toggleLoop').onclick = () => { looping = !looping; renderViewer(); };
-    function bindHold(id, v) { const el = document.getElementById(id); el.addEventListener('pointerdown', () => velocity = v); el.addEventListener('pointerup', () => velocity = 0); el.addEventListener('pointercancel', () => velocity = 0); el.addEventListener('pointerleave', () => velocity = 0); }
-    bindHold('leftBtn', -0.8); bindHold('rightBtn', 0.8);
-    ['jumpBtn','atkBtn','dodgeBtn'].forEach(id => document.getElementById(id).onclick = () => { const a = document.getElementById('avatar'); a.style.background = id === 'jumpBtn' ? '#22c55e' : id === 'atkBtn' ? '#f59e0b' : '#ef4444'; setTimeout(() => a.style.background = '#38bdf8', 160); });
-    function loop() { avatarX = Math.max(6, Math.min(94, avatarX + velocity)); document.getElementById('avatar').style.left = `calc(${avatarX}% - 26px)`; requestAnimationFrame(loop); }
-    const s = loadSave(); show(s.gateAccepted ? 'menu' : 'gate'); loop();
-    window.addEventListener('contextmenu', e => e.preventDefault());
-  </script>
+<main id="app">
+<section id="gate" class="screen active"><h1>Veilbound</h1><p>Phase 2 placeholder-safe scaffold. This build contains no final adult art or explicit assets.</p><div class="card"><h2>Content Gate Placeholder</h2><p>Future adult content is planned as opt-in, skippable, and controlled through settings and gallery playback. All characters will be 18+.</p><button class="primary" data-go="menu" data-accept>Continue</button></div></section>
+<section id="menu" class="screen"><h1>Veilbound</h1><p>Mobile-first browser game scaffold for iPhone and GitHub Pages.</p><div class="grid"><button class="primary" data-go="hub">Continue</button><button data-go="game">Start Level 1</button><button data-go="options">Options</button><button data-go="gallery">Gallery</button></div></section>
+<section id="hub" class="screen"><h2>Hub</h2><p id="hubState">Current Level: 1 | Phase 2 side-scroller core.</p><div class="grid"><button data-go="levels">Level Select</button><button class="primary" data-go="game">Play Level 1</button><button data-go="customize">Customize</button><button data-go="skills">Skills</button><button data-go="gallery">Gallery</button><button data-go="viewer">Scene Viewer</button><button data-go="options">Options</button><button data-go="touch">Touch Test</button><button data-go="menu">Main Menu</button></div></section>
+<section id="customize" class="screen"><h2>Customization</h2><p>Placeholder for layered art: base body, hair, face, outfit, damage layer, accessory.</p><div class="stack" id="customButtons"></div><button class="back" data-go="hub">Back</button></section>
+<section id="options" class="screen"><h2>Options</h2><p>Saved locally on this browser.</p><div class="stack" id="optionButtons"></div><button class="danger" id="resetSave">Reset Save</button><button class="back" data-go="hub">Back</button></section>
+<section id="gallery" class="screen"><h2>Gallery</h2><p>Unlocked placeholder scene records.</p><div class="card"><span class="pill">Unlocked</span><strong>Phase 1 Placeholder Intro</strong><p>Proves gallery navigation before final art exists.</p><button class="primary" data-go="viewer">Open Scene Viewer</button></div><button class="back" data-go="hub">Back</button></section>
+<section id="viewer" class="screen"><h2>Scene Viewer</h2><p>Touch-friendly scene controls. Final animation phases will plug in later.</p><div class="card" style="text-align:center"><h1 id="phaseLabel">Setup</h1><p id="loopLabel">Loop phase: ON</p><div class="phase-controls"><button id="prevPhase">Prev</button><button class="warn" id="toggleLoop">Loop</button><button id="nextPhase">Next</button></div></div><button class="back" data-go="gallery">Back</button></section>
+<section id="levels" class="screen"><h2>Level Select</h2><p>Phase 2 adds a playable placeholder side-scroller room.</p><div class="card"><strong>Level 1: Shrine Ruins</strong><p>Current prototype: movement, jump, attack, dodge, basic enemy, flying enemy, pickup, clothing-health, and boss-gate marker.</p><button class="primary" data-go="game">Start Level 1</button></div><button class="back" data-go="hub">Back</button></section>
+<section id="skills" class="screen"><h2>Skills</h2><p>Placeholder for future progression.</p><div class="stack"><button>Quick Strike: planned</button><button>Dodge Counter: planned</button><button>Energy Break: planned</button><button>Repair: planned</button><button>Resist: planned</button></div><button class="back" data-go="hub">Back</button></section>
+<section id="touch" class="screen"><h2>Touch Test</h2><p>Hold left/right. Tap action buttons. This is the control layout test for iPhone.</p><div class="touch-pad"><div id="avatar"></div></div><div class="controls"><div class="left"><button id="leftBtn">←</button><button id="rightBtn">→</button></div><div class="right"><button id="jumpBtn" class="primary">Jump</button><button id="atkBtn" class="primary">Atk</button><button id="dodgeBtn">Dodge</button></div></div><button class="back" data-go="hub">Back</button></section>
+<section id="gameScreen" class="screen"><div class="hud"><span>Clothing <span id="layers"></span></span><span>Energy <span class="energy-bar"><span id="energyFill" class="energy-fill"></span></span></span><span id="objective">Reach the gate →</span></div><div class="game-wrap"><canvas id="gameCanvas" width="960" height="540"></canvas></div><div class="mobile-game-controls"><div class="move-controls"><button class="game-btn" id="gLeft">←</button><button class="game-btn" id="gRight">→</button></div><div class="action-controls"><button class="game-btn primary" id="gJump">Jump</button><button class="game-btn primary" id="gAttack">Atk</button><button class="game-btn" id="gDodge">Dodge</button></div></div><p class="game-note">Phase 2 test: placeholders only. Hit enemies with Atk, dodge through danger, collect the glowing pickup, and reach the right-side gate.</p><div class="tiny-row"><button id="restartLevel">Restart</button><button data-go="hub">Hub</button></div></section>
+</main>
+<script>
+const SAVE_KEY='veilbound_phase2_save';
+const defaults={gateAccepted:false,player:{skinTone:'default',hairColor:'black',hairStyle:'short',outfit:'starter',passive:'balanced'},settings:{reducedExplicitness:true,encounterIntentPrompts:true,leftHandedMode:false,screenShake:false},progress:{currentLevel:1,level1Cleared:false}};
+const phases=['Setup','Main loop','Variant loop','Result'];let phase=0,looping=true,avatarX=50,velocity=0,current='gate';
+function loadSave(){try{return {...defaults,...(JSON.parse(localStorage.getItem(SAVE_KEY))||{})}}catch{return {...defaults}}}
+function saveGame(s){localStorage.setItem(SAVE_KEY,JSON.stringify(s))}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');current=id;if(id==='game')startGame();else stopGame();render()}
+function render(){const s=loadSave();document.getElementById('hubState').textContent=`Current Level: ${s.progress?.currentLevel||1} | ${s.progress?.level1Cleared?'Level 1 cleared':'Phase 2 side-scroller core.'}`;renderCustomize(s);renderOptions(s);renderViewer();renderHud()}
+function renderCustomize(s){const fields=[['Skin tone','skinTone',['default','warm','deep','pale']],['Hair color','hairColor',['black','brown','blonde','silver']],['Hair style','hairStyle',['short','long']],['Outfit','outfit',['starter','training']],['Passive','passive',['balanced','energy','escape']]];document.getElementById('customButtons').innerHTML=fields.map(([label,key])=>`<button data-cycle="${key}">${label}: ${s.player[key]}</button>`).join('');document.querySelectorAll('[data-cycle]').forEach(btn=>btn.onclick=()=>{const key=btn.dataset.cycle,row=fields.find(f=>f[1]===key),next=loadSave(),idx=row[2].indexOf(next.player[key]);next.player[key]=row[2][(idx+1)%row[2].length];saveGame(next);render()})}
+function renderOptions(s){const opts=[['Reduced explicitness','reducedExplicitness'],['Encounter prompts','encounterIntentPrompts'],['Left-handed mode','leftHandedMode'],['Screen shake','screenShake']];document.getElementById('optionButtons').innerHTML=opts.map(([label,key])=>`<button data-toggle="${key}">${label}: ${s.settings[key]?'ON':'OFF'}</button>`).join('');document.querySelectorAll('[data-toggle]').forEach(btn=>btn.onclick=()=>{const next=loadSave(),key=btn.dataset.toggle;next.settings[key]=!next.settings[key];saveGame(next);render()})}
+function renderViewer(){document.getElementById('phaseLabel').textContent=phases[phase];document.getElementById('loopLabel').textContent=`Loop phase: ${looping?'ON':'OFF'}`}
+document.addEventListener('click',e=>{const go=e.target?.dataset?.go;if(go)show(go);if(e.target?.dataset?.accept!==undefined){const s=loadSave();s.gateAccepted=true;saveGame(s)}});
+document.getElementById('resetSave').onclick=()=>{localStorage.removeItem(SAVE_KEY);show('gate')};document.getElementById('prevPhase').onclick=()=>{phase=Math.max(0,phase-1);renderViewer()};document.getElementById('nextPhase').onclick=()=>{phase=Math.min(phases.length-1,phase+1);renderViewer()};document.getElementById('toggleLoop').onclick=()=>{looping=!looping;renderViewer()};
+function bindHold(id,v){const el=document.getElementById(id);el.addEventListener('pointerdown',()=>velocity=v);el.addEventListener('pointerup',()=>velocity=0);el.addEventListener('pointercancel',()=>velocity=0);el.addEventListener('pointerleave',()=>velocity=0)}bindHold('leftBtn',-.8);bindHold('rightBtn',.8);['jumpBtn','atkBtn','dodgeBtn'].forEach(id=>document.getElementById(id).onclick=()=>{const a=document.getElementById('avatar');a.style.background=id==='jumpBtn'?'#22c55e':id==='atkBtn'?'#f59e0b':'#ef4444';setTimeout(()=>a.style.background='#38bdf8',160)});function touchLoop(){avatarX=Math.max(6,Math.min(94,avatarX+velocity));document.getElementById('avatar').style.left=`calc(${avatarX}% - 26px)`;requestAnimationFrame(touchLoop)}
+const game={running:false,last:0,cam:0,w:2100,keys:{left:false,right:false,jump:false,attack:false,dodge:false},player:{x:80,y:360,w:34,h:66,vx:0,vy:0,ground:false,face:1,layers:3,energy:0,atk:0,dodge:0,inv:0},enemies:[],pickups:[],cleared:false,msg:''};
+const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
+function startGame(){resetGame();game.running=true;game.last=performance.now();requestAnimationFrame(gameLoop)}function stopGame(){game.running=false}
+function resetGame(){Object.assign(game.player,{x:80,y:360,vx:0,vy:0,ground:false,face:1,layers:3,energy:0,atk:0,dodge:0,inv:0});game.cam=0;game.cleared=false;game.msg='';game.enemies=[{type:'grunt',x:520,y:388,w:44,h:42,hp:2,dir:-1,hit:0},{type:'grunt',x:980,y:388,w:44,h:42,hp:2,dir:1,hit:0},{type:'bat',x:1320,y:250,w:46,h:34,hp:2,dir:-1,t:0,hit:0}];game.pickups=[{x:760,y:330,r:12,got:false},{x:1500,y:320,r:12,got:false}];renderHud()}
+document.getElementById('restartLevel').onclick=resetGame;
+function holdGame(id,key){const el=document.getElementById(id);el.addEventListener('pointerdown',()=>{game.keys[key]=true;if(key==='jump')doJump();if(key==='attack')doAttack();if(key==='dodge')doDodge()});el.addEventListener('pointerup',()=>game.keys[key]=false);el.addEventListener('pointercancel',()=>game.keys[key]=false);el.addEventListener('pointerleave',()=>{if(key==='left'||key==='right')game.keys[key]=false})}holdGame('gLeft','left');holdGame('gRight','right');holdGame('gJump','jump');holdGame('gAttack','attack');holdGame('gDodge','dodge');
+window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')game.keys.left=true;if(e.key==='ArrowRight')game.keys.right=true;if(e.key==='z'||e.key===' ')doJump();if(e.key==='x')doAttack();if(e.key==='c')doDodge()});window.addEventListener('keyup',e=>{if(e.key==='ArrowLeft')game.keys.left=false;if(e.key==='ArrowRight')game.keys.right=false});
+function doJump(){const p=game.player;if(p.ground){p.vy=-620;p.ground=false}}
+function doAttack(){const p=game.player;if(p.atk<=0){p.atk=.24;p.energy=Math.min(100,p.energy+4)}}
+function doDodge(){const p=game.player;if(p.dodge<=0&&p.energy>=8){p.dodge=.28;p.inv=.32;p.energy-=8;p.vx=360*p.face}}
+function rects(a,b){return a.x<a.w+b.x&&a.x+a.w>b.x&&a.y<a.h+b.y&&a.y+a.h>b.y}
+function hitPlayer(){const p=game.player;if(p.inv>0||game.cleared)return;p.layers--;p.inv=1.1;p.energy=Math.min(100,p.energy+12);game.msg=p.layers<=0?'Layer 0: checkpoint reset placeholder.':'Clothing layer damaged.';if(p.layers<=0)setTimeout(resetGame,650);renderHud()}
+function gameLoop(now){if(!game.running)return;const dt=Math.min(.033,(now-game.last)/1000);game.last=now;updateGame(dt,now/1000);drawGame(now/1000);requestAnimationFrame(gameLoop)}
+function updateGame(dt,t){const p=game.player;p.atk=Math.max(0,p.atk-dt);p.dodge=Math.max(0,p.dodge-dt);p.inv=Math.max(0,p.inv-dt);let ax=0;if(game.keys.left)ax-=1;if(game.keys.right)ax+=1;if(ax){p.face=ax;p.vx=ax*(p.dodge>0?330:230)}else if(p.dodge<=0)p.vx*=.82;p.vy+=1500*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.y+p.h>=430){p.y=430-p.h;p.vy=0;p.ground=true}else p.ground=false;p.x=Math.max(20,Math.min(game.w-80,p.x));game.cam=Math.max(0,Math.min(game.w-960,p.x-330));const atkBox={x:p.face>0?p.x+p.w:p.x-48,y:p.y+12,w:48,h:32};game.enemies.forEach(e=>{if(e.hp<=0)return;e.hit=Math.max(0,e.hit-dt);if(e.type==='grunt'){e.x+=e.dir*65*dt;if(e.x<420||e.x>1080)e.dir*=-1;e.y=388}else{e.t+=dt;e.x+=e.dir*80*dt;e.y=245+Math.sin(e.t*3)*38;if(e.x<1220||e.x>1500)e.dir*=-1}if(p.atk>0&&rects(atkBox,e)){e.hp--;e.hit=.18;p.energy=Math.min(100,p.energy+16);game.msg='Hit!'}if(e.hp>0&&rects(p,e))hitPlayer()});game.pickups.forEach(o=>{if(!o.got&&Math.hypot((p.x+p.w/2)-o.x,(p.y+p.h/2)-o.y)<42){o.got=true;p.energy=Math.min(100,p.energy+25);game.msg='Energy pickup.'}});if(p.x>game.w-145&&!game.cleared){game.cleared=true;game.msg='Gate reached! Level 1 clear placeholder.';const s=loadSave();s.progress.level1Cleared=true;saveGame(s);renderHud()}}
+function drawGame(t){ctx.clearRect(0,0,960,540);ctx.fillStyle='#111827';ctx.fillRect(0,0,960,540);ctx.fillStyle='#1e1b4b';for(let i=0;i<18;i++){ctx.fillRect((i*180-game.cam*.35)%1100,60+(i%4)*35,90,5)}ctx.fillStyle='#312e81';ctx.fillRect(-game.cam,430,game.w,110);ctx.fillStyle='#475569';for(let x=0;x<game.w;x+=90)ctx.fillRect(x-game.cam,430,55,8);ctx.fillStyle='#f59e0b';ctx.fillRect(game.w-100-game.cam,330,48,100);ctx.fillStyle='#fde68a';ctx.fillRect(game.w-92-game.cam,338,32,84);ctx.fillStyle='#e0e7ff';ctx.font='18px system-ui';ctx.fillText('GATE',game.w-110-game.cam,318);game.pickups.forEach(o=>{if(o.got)return;ctx.fillStyle='#a78bfa';ctx.beginPath();ctx.arc(o.x-game.cam,o.y,o.r+Math.sin(t*7)*2,0,Math.PI*2);ctx.fill()});game.enemies.forEach(e=>{if(e.hp<=0)return;ctx.fillStyle=e.hit>0?'#fbbf24':e.type==='bat'?'#f472b6':'#ef4444';if(e.type==='bat'){ctx.beginPath();ctx.ellipse(e.x-game.cam+e.w/2,e.y+e.h/2,e.w/2,e.h/2,0,0,Math.PI*2);ctx.fill()}else{ctx.fillRect(e.x-game.cam,e.y,e.w,e.h)}ctx.fillStyle='#fff';ctx.fillRect(e.x-game.cam+8,e.y+8,6,6);ctx.fillRect(e.x-game.cam+e.w-14,e.y+8,6,6)});const p=game.player;if(p.atk>0){ctx.fillStyle='rgba(251,191,36,.55)';ctx.fillRect((p.face>0?p.x+p.w:p.x-48)-game.cam,p.y+12,48,32)}ctx.fillStyle=p.inv>0&&Math.floor(t*18)%2?'rgba(56,189,248,.45)':'#38bdf8';ctx.fillRect(p.x-game.cam,p.y,p.w,p.h);ctx.fillStyle='#0f172a';ctx.fillRect(p.x-game.cam+8,p.y+12,7,7);ctx.fillRect(p.x-game.cam+p.w-15,p.y+12,7,7);ctx.fillStyle='#cbd5e1';ctx.fillRect(p.x-game.cam+4,p.y+p.h-8,p.w-8,8);ctx.fillStyle='#e5e7eb';ctx.font='16px system-ui';ctx.fillText(game.msg,20,36)}
+function renderHud(){if(!document.getElementById('layers'))return;const p=game.player;document.getElementById('layers').innerHTML=[1,2,3].map(i=>`<i class="layer-dot ${i<=p.layers?'':'off'}"></i>`).join('');document.getElementById('energyFill').style.width=`${p.energy||0}%`;document.getElementById('objective').textContent=game.cleared?'Level 1 clear placeholder':'Reach the gate →'}
+const s=loadSave();show(s.gateAccepted?'menu':'gate');touchLoop();window.addEventListener('contextmenu',e=>e.preventDefault());
+</script>
 </body>
 </html>
