@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "v4.0.5-reference-encounter-core";
+  const BUILD = "v4.0.6-reference-core-boss-tune";
 
   const CFG = {
     worldW: 1800,
@@ -32,6 +32,8 @@
     spawnAheadMax: 820,
     defeatCycle: 2.8,
     defeatSpawn: 4.8,
+    bossDamageCooldown: 1.35,
+    bossContactPad: 12,
   };
 
   const C = {
@@ -67,6 +69,7 @@
     bossInput: { left: false, right: false },
     levelAtkLock: false,
     bossAtkLock: false,
+    bossHitCooldown: 0,
     runFlags: { seenDeepEncounters: new Set() },
   };
 
@@ -232,6 +235,7 @@
   function startBoss() {
     const source = state.p || makePlayer({ energy: 20 });
     state.bossAtkLock = false;
+    state.bossHitCooldown = 0;
     state.bp = makePlayer({ x: 110, armor: source.armor, health: source.health, energy: Math.max(20, source.energy) });
     state.boss = {
       x: 670, y: 326, w: 120, h: 104, hp: 100, maxHp: 100, hitFlash: 0,
@@ -380,7 +384,7 @@
   }
 
   function canBossHazardHit(actor) {
-    return actor && actor.invulnerable <= 0 && actor.dashing <= 0 && actor.intangible <= 0;
+    return actor && state.bossHitCooldown <= 0 && actor.invulnerable <= 0 && actor.dashing <= 0 && actor.intangible <= 0;
   }
 
   function handleEnemyContact(enemy) {
@@ -419,7 +423,8 @@
   function hurtBossPlayer(ignoreArmor) {
     const p = state.bp;
     if (!canBossHazardHit(p)) return;
-    p.invulnerable = 1;
+    state.bossHitCooldown = CFG.bossDamageCooldown;
+    p.invulnerable = 1.15;
     p.energy = Math.min(100, p.energy + 12);
     if (p.armor > 0 && !ignoreArmor) {
       p.armor -= 1;
@@ -748,6 +753,7 @@
     const p = state.bp;
     const b = state.boss;
     if (b.defeated) return;
+    state.bossHitCooldown = Math.max(0, state.bossHitCooldown - dt);
     updateActor(p, state.bossInput, dt, 820);
     b.hitFlash = Math.max(0, b.hitFlash - dt);
     b.cooldown -= dt;
@@ -762,10 +768,10 @@
       b.cooldown = 1.05;
       beginBossAttack();
     }
-    if (b.windup > 0 && canBossHazardHit(p) && rectsOverlap(p, bossSlamZone())) hurtBossPlayer(false);
+    if (b.windup > 0 && canBossHazardHit(p) && rectsOverlap(bossPlayerHitbox(p), bossSlamZone())) hurtBossPlayer(false);
     b.projectiles.forEach((proj) => updateProjectile(proj, p, dt));
     b.projectiles = b.projectiles.filter((proj) => proj.life > 0 && proj.x > -80 && proj.x < 1040);
-    if (canBossHazardHit(p) && rectsOverlap(p, b)) hurtBossPlayer(false);
+    if (canBossHazardHit(p) && rectsOverlap(bossPlayerHitbox(p), b)) hurtBossPlayer(false);
   }
 
   function beginBossAttack() {
@@ -792,12 +798,22 @@
   function updateProjectile(proj, p, dt) {
     proj.x += proj.vx * dt;
     proj.life -= dt;
-    const touching = rectsOverlap(p, proj);
+    const touching = rectsOverlap(bossPlayerHitbox(p), proj);
     if (!touching) { proj.ignoreUntilClear = false; return; }
     if (!canBossHazardHit(p)) { proj.ignoreUntilClear = true; return; }
     if (proj.ignoreUntilClear) return;
     proj.life = 0;
     hurtBossPlayer(false);
+  }
+
+  function bossPlayerHitbox(p) {
+    const pad = CFG.bossContactPad;
+    return {
+      x: p.x + pad,
+      y: p.y + 8,
+      w: Math.max(12, p.w - pad * 2),
+      h: Math.max(20, p.h - 14),
+    };
   }
 
   function bossSlamZone() {
