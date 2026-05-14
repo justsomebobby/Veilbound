@@ -1,0 +1,33 @@
+VEILBOUND v5.0.6 PLAYTEST POLISH — FLAT FILE INSTRUCTIONS
+
+This is a polish pass on v5.0.5.
+
+Create these files in the ROOT of the Veilbound repo, beside index.html:
+
+1. player-assets-v506-part1.js
+2. player-assets-v506-part2.js
+3. player-assets-v506-part3.js
+4. player-assets-v506-part4.js
+5. game-core-v506-playtest-polish.js
+
+Then edit index.html and replace the old v5 script lines with these five lines:
+
+<script defer src="./player-assets-v506-part1.js?v=5.0.6"></script>
+<script defer src="./player-assets-v506-part2.js?v=5.0.6"></script>
+<script defer src="./player-assets-v506-part3.js?v=5.0.6"></script>
+<script defer src="./player-assets-v506-part4.js?v=5.0.6"></script>
+<script defer src="./game-core-v506-playtest-polish.js?v=5.0.6-playtest-polish"></script>
+
+Important:
+- All four player-assets files must be above the game-core file.
+- These are flat files. No folder needed.
+
+Fixes in this pass:
+- Player sprite facing corrected by mirroring the cleaned source art.
+- Idle animation rebuilt calmer and slowed down.
+- Crawl matte/white halo cleanup reapplied.
+- Armor1/stockings walk shrink fixed by using the full-size walk base.
+- Boss win/loss state now freezes player movement.
+- King Slime tutorial fight made easier:
+  boss HP 80, player boss damage 20, faster player boss attack cooldown,
+  slower boss attack rhythm, lower health damage, slower glob projectile.
