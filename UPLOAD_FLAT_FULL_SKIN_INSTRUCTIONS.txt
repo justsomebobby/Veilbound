@@ -1,0 +1,28 @@
+VEILBOUND v5.0.3 FULL SKIN BUILD — FLAT FILE INSTRUCTIONS
+
+This is the FULL visual asset version.
+It does NOT require folders.
+It does NOT require PNG uploads.
+It does NOT downgrade skins to simple filters.
+
+Create these files in the ROOT of the Veilbound repo, beside index.html:
+
+1. player-assets-v503-part1.js
+2. player-assets-v503-part2.js
+3. player-assets-v503-part3.js
+4. player-assets-v503-part4.js
+5. game-core-v503-skin-assets-core.js
+
+Then edit index.html and replace the old single game script line with these five lines:
+
+<script defer src="./player-assets-v503-part1.js?v=5.0.3"></script>
+<script defer src="./player-assets-v503-part2.js?v=5.0.3"></script>
+<script defer src="./player-assets-v503-part3.js?v=5.0.3"></script>
+<script defer src="./player-assets-v503-part4.js?v=5.0.3"></script>
+<script defer src="./game-core-v503-skin-assets-core.js?v=5.0.3-skin-assets-core"></script>
+
+Important:
+- All four player-assets files MUST be above the game-core file.
+- These are flat files. No folder needed.
+- If creating manually on GitHub mobile, create each file one at a time and paste its matching content.
+- This preserves the full sprite asset version.
