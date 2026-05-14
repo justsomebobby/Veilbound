@@ -1,0 +1,62 @@
+VEILBOUND v5.0.7 CHARACTER SKIN FIX — FLAT FILE INSTRUCTIONS
+
+This is a character-skin correction pass, not a filter-only recolor.
+
+Create these files in the ROOT of the Veilbound repo, beside index.html:
+
+1. player-assets-v507-part1.js
+2. player-assets-v507-part2.js
+3. player-assets-v507-part3.js
+4. player-assets-v507-part4.js
+5. player-assets-v507-part5.js
+6. player-assets-v507-part6.js
+7. player-assets-v507-part7.js
+8. player-assets-v507-part8.js
+9. player-assets-v507-part9.js
+10. player-assets-v507-part10.js
+11. player-assets-v507-part11.js
+12. player-assets-v507-part12.js
+13. player-assets-v507-part13.js
+14. player-assets-v507-part14.js
+15. player-assets-v507-part15.js
+16. player-assets-v507-part16.js
+17. player-assets-v507-part17.js
+18. player-assets-v507-part18.js
+19. game-core-v507-character-skin-fix.js
+
+Then edit index.html and replace the old v5 script lines with:
+
+<script defer src="./player-assets-v507-part1.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part2.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part3.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part4.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part5.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part6.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part7.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part8.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part9.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part10.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part11.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part12.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part13.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part14.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part15.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part16.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part17.js?v=5.0.7"></script>
+<script defer src="./player-assets-v507-part18.js?v=5.0.7"></script>
+<script defer src="./game-core-v507-character-skin-fix.js?v=5.0.7-character-skin-fix"></script>
+
+Important:
+- All player-assets-v507-part files must be above the game-core file.
+- These are flat files. No folder needed.
+
+Fixes:
+- Global mirror bug fixed: walk/attack no longer reverse when idle is corrected.
+- Idle source is physically normalized in the asset sheets instead of globally mirroring every animation.
+- Skins are now prebuilt character sprite sheets in the asset files, not runtime CSS filters.
+- Character roster now represents identities:
+  Pink Witch, Tooka, Aka Standard, Aka Suit, White Witch, Savor, Orange Witch.
+- Non-witch characters get hat/cape removal attempts plus simple character overlays:
+  short blonde Tooka hair/school outfit, Aka school outfit, Aka suit/eyepatch,
+  Savor magical-girl twin-tail/sailor accents.
+- Boss/playtest tuning from v5.0.6 is preserved.
