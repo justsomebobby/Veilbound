@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD = "v4.0.6-reference-core-boss-tune";
+  const BUILD = "v4.0.7-boss-armor-rhythm-tune";
 
   const CFG = {
     worldW: 1800,
@@ -32,8 +32,14 @@
     spawnAheadMax: 820,
     defeatCycle: 2.8,
     defeatSpawn: 4.8,
-    bossDamageCooldown: 1.35,
+    bossDamageCooldown: 2.1,
     bossContactPad: 12,
+    bossAttackCooldown: 1.75,
+    bossSlamTelegraph: 0.48,
+    bossGlobTelegraph: 0.58,
+    bossSlamActiveTime: 0.34,
+    bossHealthDamage: 28,
+    bossPostHitInvulnerable: 1.55,
   };
 
   const C = {
@@ -236,7 +242,7 @@
     const source = state.p || makePlayer({ energy: 20 });
     state.bossAtkLock = false;
     state.bossHitCooldown = 0;
-    state.bp = makePlayer({ x: 110, armor: source.armor, health: source.health, energy: Math.max(20, source.energy) });
+    state.bp = makePlayer({ x: 110, armor: Math.max(3, source.armor), health: source.health, energy: Math.max(20, source.energy) });
     state.boss = {
       x: 670, y: 326, w: 120, h: 104, hp: 100, maxHp: 100, hitFlash: 0,
       cooldown: 0.65, windup: 0, telegraph: 0, telegraphType: "",
@@ -424,14 +430,14 @@
     const p = state.bp;
     if (!canBossHazardHit(p)) return;
     state.bossHitCooldown = CFG.bossDamageCooldown;
-    p.invulnerable = 1.15;
+    p.invulnerable = CFG.bossPostHitInvulnerable;
     p.energy = Math.min(100, p.energy + 12);
     if (p.armor > 0 && !ignoreArmor) {
       p.armor -= 1;
-      setBossMessage("Armor layer hit");
+      setBossMessage(`Armor layer hit (${p.armor}/3 left)`);
     } else {
-      p.health -= 18;
-      setBossMessage("Boss defeat placeholder - Restart Boss or Hub");
+      p.health -= CFG.bossHealthDamage;
+      setBossMessage(`Health hit -${CFG.bossHealthDamage}`);
     }
     if (p.health <= 0) {
       p.health = 0;
@@ -765,7 +771,7 @@
     b.x += Math.sign(centerX(p) - centerX(b)) * 36 * dt;
     b.x = clamp(b.x, 520, 820);
     if (b.cooldown <= 0 && b.telegraph <= 0 && b.windup <= 0) {
-      b.cooldown = 1.05;
+      b.cooldown = CFG.bossAttackCooldown;
       beginBossAttack();
     }
     if (b.windup > 0 && canBossHazardHit(p) && rectsOverlap(bossPlayerHitbox(p), bossSlamZone())) hurtBossPlayer(false);
@@ -778,7 +784,7 @@
     const p = state.bp;
     const b = state.boss;
     const glob = Math.abs(centerX(p) - centerX(b)) > 215 || b.lastAttackType === "slam";
-    b.telegraph = glob ? 0.38 : 0.3;
+    b.telegraph = glob ? CFG.bossGlobTelegraph : CFG.bossSlamTelegraph;
     b.telegraphType = glob ? "glob" : "slam";
     b.lastAttackType = b.telegraphType;
     setBossMessage(glob ? "King Slime forms a glob" : "King Slime swells up");
@@ -787,7 +793,7 @@
   function releaseBossAttack() {
     const p = state.bp;
     const b = state.boss;
-    if (b.telegraphType === "slam") b.windup = 0.22;
+    if (b.telegraphType === "slam") b.windup = CFG.bossSlamActiveTime;
     if (b.telegraphType === "glob") {
       const dir = centerX(p) < centerX(b) ? -1 : 1;
       b.projectiles.push({ x: b.x + b.w / 2, y: b.y + 50, w: 28, h: 28, vx: dir * 290, life: 2.8, ignoreUntilClear: false });
